@@ -1,5 +1,8 @@
 import { FaSignInAlt } from 'react-icons/fa';
 import { useState } from 'react';
+import {useSelector, useDispatch} from 'react-redux'; 
+import {login} from '../features/auth/authSlice'; 
+import { AppDispatch, RootState} from '../app/store';
 
 const Login = () => {
 	const [formData, setFormData] = useState({
@@ -7,11 +10,20 @@ const Login = () => {
 		password :''
 	}); 
 
+	const dispatch: AppDispatch = useDispatch(); 
+	const {user, isLoading, isSuccess, message} = useSelector((state: RootState)=> state.auth)
+
+
 	const {email, password} = formData;
 
 	const onSubmit = (e: { preventDefault: () => void; }) => {
 		e.preventDefault();
-
+		const userData = {
+			email, 
+			password
+		}
+		//@ts-ignore
+		dispatch(login(userData))
 	}
 
 	const onChange = (e: { target : {name :string, value: string}}) => {

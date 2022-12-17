@@ -1,6 +1,13 @@
-import {useState} from 'react'; 
+import {useEffect, useState} from 'react'; 
 import { FaUser } from 'react-icons/fa';
 import { toast } from 'react-toastify';
+import {useSelector, useDispatch} from 'react-redux'; 
+import {register, reset} from '../features/auth/authSlice'; 
+import { RootState, AppDispatch} from '../app/store'; 
+import {useNavigate} from 'react-router-dom'; 
+
+
+
 const Register = () => {
 	const [formData, setFormData] = useState({
 		name: '',
@@ -11,8 +18,25 @@ const Register = () => {
 
 	const {name, email, password, confirmPassword} = formData; 
 
+	const dispatch : AppDispatch = useDispatch();
+	const navigate = useNavigate(); 
+
+	const {user, isLoading, isSuccess, isError, message} = useSelector((state: RootState)=> state.auth)
+
+	useEffect(() => {
+		if(isError) {
+			//@ts-ignore
+			toast.error(message)
+		}
+		// redirect when logged in 
+		if(isSuccess || user){
+			navigate('/')
+		}
+
+		dispatch(reset())
+	}, [isError, isSuccess, user, message, navigate, dispatch])
+
 	const onChange = (e: { target: { name: string; value: any; }; }) => {
-		console.log([e.target.name])
 		setFormData((prevState) => ({
 			...prevState,
 			// name, email 
@@ -26,6 +50,14 @@ const Register = () => {
 			toast.error('Passwords do not match', {
 				position: toast.POSITION.TOP_RIGHT
 			})
+		} else {
+			const userData = {
+				name, 
+				email, 
+				password
+			}
+             //@ts-ignore  
+			dispatch(register(userData))
 		}
 	}
 
@@ -33,7 +65,7 @@ const Register = () => {
 		<>
 		<section className='heading' >
 			<h1>
-				<FaUser/> Register 
+				<FaUser/> Register {user}
 			</h1>
 			<p>Please create an account</p>
 		</section>
@@ -69,6 +101,7 @@ const Register = () => {
 					className='form-control' 
 					id='password'
 					name='password'
+					autoComplete='on'
 					value={password}
 					onChange={onChange}
 					placeholder = 'Enter your password'
@@ -81,6 +114,7 @@ const Register = () => {
 					className='form-control' 
 					id='confirmPassword'
 					name='confirmPassword'
+					autoComplete='on'
 					value={confirmPassword}
 					onChange={onChange}
 					placeholder = 'Confirm your password'
